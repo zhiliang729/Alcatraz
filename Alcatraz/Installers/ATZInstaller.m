@@ -1,6 +1,6 @@
 // ATZInstaller.m
 // 
-// Copyright (c) 2013 mneorr.com
+// Copyright (c) 2013 supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@
 #import "ATZPackage.h"
 
 static NSString *const ALCATRAZ_DATA_DIR = @"Library/Application Support/Alcatraz";
+const CGFloat ATZFakeDownloadProgress = 0.33;
+const CGFloat ATZFakeInstallProgress = 0.66;
 
 @implementation ATZInstaller
 
@@ -42,33 +44,35 @@ static NSString *const ALCATRAZ_DATA_DIR = @"Library/Application Support/Alcatra
 
 #pragma mark - Public
 
-- (void)installPackage:(ATZPackage *)package progress:(void(^)(NSString *progressMessage))progress
+- (void)installPackage:(ATZPackage *)package progress:(void(^)(NSString *, CGFloat))progress
             completion:(void(^)(NSError *error))completion {
-    
-    progress([NSString stringWithFormat:DOWNLOADING_FORMAT, package.name]);
-    [self downloadOrUpdatePackage:package completion:^(NSError *error) {
+
+    progress([NSString stringWithFormat:DOWNLOADING_FORMAT, package.name], ATZFakeDownloadProgress);
+    [self downloadOrUpdatePackage:package completion:^(NSString *output, NSError *error) {
        
-        if (error) completion(error);
-        progress([NSString stringWithFormat:INSTALLING_FORMAT, package.name]);
+        if (error) { completion(error); return; }
+        progress([NSString stringWithFormat:INSTALLING_FORMAT, package.name], ATZFakeInstallProgress);
         
         [self installPackage:package completion:^(NSError *error) {
-            
-            if (error) completion(error);
-            [self reloadXcodeForPackage:package completion:completion];
-            [self postNotificationForInstalledPackage:package];
+            if (error) {
+                completion(error);
+            } else {
+                [self reloadXcodeForPackage:package completion:completion];
+            }
         }];
     }];
 }
 
-- (void)updatePackage:(ATZPackage *)package progress:(void(^)(NSString *progressMessage))progress
+- (void)updatePackage:(ATZPackage *)package progress:(void(^)(NSString *, CGFloat))progress
            completion:(void(^)(NSError *error))completion {
     
-    progress([NSString stringWithFormat:UPDATING_FORMAT, package.name]);
-    [self updatePackage:package completion:^(NSString *output, NSError *error) {
+    progress([NSString stringWithFormat:UPDATING_FORMAT, package.name], ATZFakeDownloadProgress);
+    [self downloadOrUpdatePackage:package completion:^(NSString *output, NSError *error) {
         
         BOOL needsUpdate = output.length > 0;
         if (error || !needsUpdate) { completion(error); return; }
-        
+
+        progress([NSString stringWithFormat:INSTALLING_FORMAT, package.name], ATZFakeInstallProgress);
         [self installPackage:package completion:completion];
     }];
 }
@@ -94,7 +98,7 @@ static NSString *const ALCATRAZ_DATA_DIR = @"Library/Application Support/Alcatra
 }
 
 
-- (void)downloadPackage:(ATZPackage *)package completion:(void(^)(NSError *))completion {
+- (void)downloadPackage:(ATZPackage *)package completion:(void(^)(NSString *, NSError *))completion {
     @throw [NSException exceptionWithName:@"Abstract Installer"
                                    reason:@"Abstract Installer doesn't know how to download" userInfo:nil];
 }
@@ -129,26 +133,14 @@ static NSString *const ALCATRAZ_DATA_DIR = @"Library/Application Support/Alcatra
 
 #pragma mark - Private
 
-- (void)downloadOrUpdatePackage:(ATZPackage *)package completion:(void (^)(NSError *))completion {
+- (void)downloadOrUpdatePackage:(ATZPackage *)package completion:(void (^)(NSString *, NSError *))completion {
     
     if ([[NSFileManager sharedManager] fileExistsAtPath:[self pathForDownloadedPackage:package]])
         [self updatePackage:package completion:^(NSString *output, NSError *error) {
-            completion(error);
+            completion(output, error);
         }];
     else
         [self downloadPackage:package completion:completion];
-}
-
-- (void)postNotificationForInstalledPackage:(ATZPackage *)package {
-    if ([NSUserNotificationCenter class] && package.isInstalled) {
-        NSUserNotification *notification = [[NSUserNotification alloc] init];
-        notification.title = [NSString stringWithFormat:@"%@ installed", package.type];
-        NSString *restartText = package.requiresRestart ? @" Please restart Xcode to use it." : @"";
-        notification.informativeText = [NSString stringWithFormat:@"%@ was installed successfully! %@", package.name, restartText];
-        [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
-        [notification release];
-        [package release];
-    }
 }
 
 @end

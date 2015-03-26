@@ -1,6 +1,6 @@
 // ColorSchemeInstaller.m
 //
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2013 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,17 +32,16 @@ static NSString *const DOWNLOADED_COLOR_SCHEMES_RELATIVE_PATH = @"FontAndColorTh
 #pragma mark - Abstract
 
 
-- (void)downloadPackage:(ATZPackage *)package completion:(void(^)(NSError *))completion {
+- (void)downloadPackage:(ATZPackage *)package completion:(void(^)(NSString *, NSError *))completion {
     ATZDownloader *downloader = [ATZDownloader new];
-    [downloader downloadFileFromPath:package.remotePath completion:^(NSData *responseData, NSError *error) {
-        
-        if (error) completion(error);
-        [self createDownloadedColorsDirectoryIfNeeded];
-        [self saveColorScheme:package withContents:responseData completion:^(NSError *error) {
-            completion(error);
-        }];
-        
-        [downloader release];
+    [downloader downloadFileFromPath:package.remotePath
+        progress:^(CGFloat progress) {} // todo: wire up the progress
+        completion:^(NSData *responseData, NSError *error) {
+            if (error) completion(nil, error);
+            [self createDownloadedColorsDirectoryIfNeeded];
+            [self saveColorScheme:package withContents:responseData completion:^(NSError *error) {
+                completion(nil, error);
+            }];
     }];
 }
 

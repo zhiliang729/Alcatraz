@@ -1,6 +1,6 @@
 // PluginWindowController.h
 // 
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2014 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,27 +25,25 @@
 @interface ATZPluginWindowController : NSWindowController<NSTableViewDelegate, NSControlTextEditingDelegate, NSUserNotificationCenterDelegate>
 
 @property (nonatomic, retain) NSArray *packages;
-@property (nonatomic, retain) NSPredicate *filterPredicate;
 
 @property (assign) IBOutlet NSPanel *previewPanel;
 @property (assign) IBOutlet NSImageView *previewImageView;
 @property (assign) IBOutlet NSSearchField *searchField;
 @property (assign) IBOutlet NSTableView *tableView;
-@property (assign) IBOutlet NSTextField *statusLabel;
-@property (assign) IBOutlet NSTextField *restartLabel;
-@property (assign) IBOutlet NSProgressIndicator *progressIndicator;
+@property (weak) IBOutlet NSSegmentedControl *packageTypeSegmentedControl;
+@property (weak) IBOutlet NSSegmentedControl *installationStateSegmentedControl;
+@property (weak) IBOutlet NSTextField *versionTextField;
 
 - (id)initWithBundle:(NSBundle *)bundle;
 
-- (IBAction)checkboxPressed:(NSButton *)sender;
 - (IBAction)openPackageWebsitePressed:(NSButton *)sender;
 - (IBAction)displayScreenshotPressed:(NSButton *)sender;
 
-- (IBAction)showAllPackagesPressed:(id)sender;
-- (IBAction)showOnlyPluginsPressed:(id)sender;
-- (IBAction)showOnlyColorSchemesPressed:(id)sender;
-- (IBAction)showOnlyTemplatesPressed:(id)sender;
+- (IBAction)segmentedControlPressed:(id)sender;
 
-- (void)reloadPackages;
+- (IBAction)updatePackageRepoPath:(id)sender;
+- (IBAction)resetPackageRepoPath:(id)sender;
+
+- (IBAction)reloadPackages:(id)sender;
 
 @end

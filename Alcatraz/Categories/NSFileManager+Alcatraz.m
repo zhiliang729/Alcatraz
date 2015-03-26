@@ -1,6 +1,6 @@
 // NSFileManager+Alcatraz.m
 // 
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2013 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,8 @@ static NSFileManager *singleton;
     NSError *error = nil;
     
     [self removeItemAtPath:path error:&error];
-    completion(error);
+    if (completion)
+        completion(error);
 }
 
 @end

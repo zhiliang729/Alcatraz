@@ -1,6 +1,6 @@
 // PackageFactory.m
 // 
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2013 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,15 +43,12 @@ static NSDictionary *packageClasses;
     NSMutableArray *packages = [NSMutableArray array];
     @autoreleasepool {
         for (NSString *packageType in packagesInDicts.allKeys) {
-            
+
             for (NSDictionary *packageDict in packagesInDicts[packageType]) {
                 ATZPackage *package = [[packageClasses[packageType] alloc] initWithDictionary:packageDict];
-                if ([package isCompatibleWithXcode]) {
-                    [packages addObject:package];
-                }
-                [package release];
+                [packages addObject:package];
             }
-        
+
         }
     }
     return [self sortPackagesByName:packages];
@@ -59,8 +56,9 @@ static NSDictionary *packageClasses;
 
 + (NSArray *)sortPackagesByName:(NSArray *)unsortedPackages {
     return [unsortedPackages sortedArrayUsingComparator:^(ATZPackage *first, ATZPackage *second) {
-        return [first.name localizedCaseInsensitiveCompare:second.name];
+        return [first.name caseInsensitiveCompare:second.name];
     }];
 }
 
 @end
+

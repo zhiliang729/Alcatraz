@@ -1,6 +1,6 @@
 // Installer.h
 //
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2013 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,14 +35,15 @@ static NSString *const UPDATING_FORMAT = @"Updating %@...";
 
 + (instancetype)sharedInstaller;
 
-- (void)installPackage:(ATZPackage *)package progress:(void(^)(NSString *progressMessage))progress
-            completion:(void(^)(NSError *error))completion;
-- (void)updatePackage:(ATZPackage *)package progress:(void(^)(NSString *progressMessage))progress
-           completion:(void(^)(NSError *error))completion;
+- (void)installPackage:(ATZPackage *)package progress:(void(^)(NSString *progressMessage, CGFloat progress))progress
+                                           completion:(void(^)(NSError *error))completion;
+- (void)updatePackage:(ATZPackage *)package progress:(void(^)(NSString *progressMessage, CGFloat progress))progress
+                                          completion:(void(^)(NSError *error))completion;
 - (void)removePackage:(ATZPackage *)package
            completion:(void(^)(NSError *error))completion;
-- (BOOL)isPackageInstalled:(ATZPackage *)package;
 
+
+- (BOOL)isPackageInstalled:(ATZPackage *)package;
 - (NSString *)pathForDownloadedPackage:(ATZPackage *)package;
 
 

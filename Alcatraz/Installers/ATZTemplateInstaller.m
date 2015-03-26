@@ -1,6 +1,6 @@
 // TemplateInstaller.m
 //
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2013 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 
 #pragma mark - Abstract
 
-- (void)downloadPackage:(ATZPackage *)package completion:(void(^)(NSError *))completion {
+- (void)downloadPackage:(ATZPackage *)package completion:(void(^)(NSString *, NSError *))completion {
     [ATZGit cloneRepository:package.remotePath toLocalPath:[self pathForDownloadedPackage:package]
                  completion:completion];
 }
@@ -64,9 +64,10 @@
     completion(error);
 }
 
-- (void)createTemplateInstallDirectory:(ATZTemplate *)template error:(NSError **)error {
+- (BOOL)createTemplateInstallDirectory:(ATZTemplate *)template error:(NSError **)error {
     [[NSFileManager sharedManager] createDirectoryAtPath:[self pathForInstalledPackage:template]
                              withIntermediateDirectories:YES attributes:nil error:error];
+    return error == nil;
 }
 
 - (NSArray *)templateFilesForClonedTemplate:(ATZTemplate *)template {
@@ -86,7 +87,7 @@
         @catch (NSException *exception) {
             NSLog(@"Exception occurred while loading template files from clone: %@", exception);
         }
-        return [foundTemplates autorelease];
+        return foundTemplates;
     }
 }
 

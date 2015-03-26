@@ -1,6 +1,6 @@
 // Alcatraz.m
 //
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2013 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,9 @@
 #import "Alcatraz.h"
 #import "ATZPluginWindowController.h"
 #import "ATZAlcatrazPackage.h"
-#import "ATZShell.h"
+#import "ATZGit.h"
 
 static Alcatraz *sharedPlugin;
-
-@interface Alcatraz()
-@property (nonatomic, strong) NSBundle *bundle;
-@end
 
 @implementation Alcatraz
 
@@ -49,24 +45,17 @@ static Alcatraz *sharedPlugin;
     return sharedPlugin;
 }
 
++ (NSString *)localizedStringForKey:(NSString *)key {
+    return [[self sharedPlugin].bundle localizedStringForKey:key value:nil table:nil];
+}
+
 - (id)initWithBundle:(NSBundle *)plugin {
     if (self = [super init]) {
         self.bundle = plugin;
-        NSString *xcodeVersion = [[NSBundle mainBundle] infoDictionary][@"CFBundleShortVersionString"];
-        NSArray *components = [xcodeVersion componentsSeparatedByString:@"."];
-        self.xcodeMajorVersion = components[0];
-        self.xcodeMinorVersion = components[1];
         [self createMenuItem];
         [self updateAlcatraz];
     }
     return self;
-}
-
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [_bundle release];
-    [_windowController release];
-    [super dealloc];
 }
 
 #pragma mark - Private
@@ -78,33 +67,37 @@ static Alcatraz *sharedPlugin;
                                                         keyEquivalent:@"9"];
     pluginManagerItem.keyEquivalentModifierMask = NSCommandKeyMask | NSShiftKeyMask;
     pluginManagerItem.target = self;
+
     [windowMenuItem.submenu insertItem:pluginManagerItem
-                               atIndex:[windowMenuItem.submenu indexOfItemWithTitle:@"Organizer"] + 1];
-    [pluginManagerItem release];
+                               atIndex:[windowMenuItem.submenu indexOfItemWithTitle:@"Bring All to Front"] - 1];
 }
 
 - (void)checkForCMDLineToolsAndOpenWindow {
-    
-    if ([ATZShell areCommandLineToolsAvailable])
-        [self loadWindowAndPutInFront];
-    else
-        [self presentAlertForInstallingCMDLineTools];
+    if ([self hasNSURLSessionAvailable]) {
+        if ([ATZGit areCommandLineToolsAvailable])
+            [self loadWindowAndPutInFront];
+        else
+            [self presentAlertWithMessageKey:@"CMDLineToolsWarning"];
+    } else {
+        [self presentAlertWithMessageKey:@"MavericksOnlyWarning"];
+    }
 }
 
 - (void)loadWindowAndPutInFront {
-    if (!self.windowController)
+    if (!self.windowController.window)
         self.windowController = [[ATZPluginWindowController alloc] initWithBundle:self.bundle];
 
     [[self.windowController window] makeKeyAndOrderFront:self];
-    [self.windowController reloadPackages];
+    [self.windowController reloadPackages:nil];
 }
 
-- (void)presentAlertForInstallingCMDLineTools {
-    NSAlert *alert = [NSAlert alertWithMessageText:[self.bundle localizedStringForKey:@"CMDLineToolsWarning" value:nil table:nil]
-                                     defaultButton:nil
-                                   alternateButton:nil
-                                       otherButton:nil
-                         informativeTextWithFormat:@""];
+- (BOOL)hasNSURLSessionAvailable {
+    return NSClassFromString(@"NSURLSession") != nil;
+}
+
+- (void)presentAlertWithMessageKey:(NSString *)messageKey {
+    NSAlert *alert = [NSAlert new];
+    alert.messageText = [[self class] localizedStringForKey:messageKey];
     [alert runModal];
 }
 
@@ -113,7 +106,6 @@ static Alcatraz *sharedPlugin;
     [queue addOperationWithBlock:^{
     
         [ATZAlcatrazPackage update];
-        [queue release];
     }];
 }
 

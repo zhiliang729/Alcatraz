@@ -1,6 +1,6 @@
 // Package.m
 //
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2014 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,48 +26,40 @@
 #import "Alcatraz.h"
 
 @implementation ATZPackage
-@dynamic isInstalled, type, website, extension;
+@dynamic isInstalled, type, website, extension, iconName;
 
 - (id)initWithDictionary:(NSDictionary *)dict {
     self = [super init];
     if (!self) return nil;
-    
+
     [self unpackFromDictionary:dict];
-    
+
     return self;
-}
-
-- (void)dealloc {
-    [_name release];
-    [_description release];
-    [_remotePath release];
-    [_screenshotPath release];
-    [super dealloc];
-}
-
-- (BOOL)isCompatibleWithXcode {
-    if (!self.xcodeVersion) return YES;
-    NSArray *components = [self.xcodeVersion componentsSeparatedByString:@"."];
-    if (components.count == 1) {
-        return [[Alcatraz sharedPlugin].xcodeMajorVersion isEqualToString:components[0]];
-    } else {
-        return [[Alcatraz sharedPlugin].xcodeMajorVersion isEqualToString:components[0]]
-            && [[Alcatraz sharedPlugin].xcodeMinorVersion isEqualToString:components[1]];
-    }
 }
 
 #pragma mark - Private
 
 - (void)unpackFromDictionary:(NSDictionary *)dictionary {
     self.name = dictionary[@"name"];
-    self.description = dictionary[@"description"];
+    self.summary = dictionary[@"description"];
     self.remotePath = dictionary[@"url"];
     self.screenshotPath = dictionary[@"screenshot"];
-    self.xcodeVersion = dictionary[@"xcode_version"];
     self.revision = [ATZGit parseRevisionFromDictionary:dictionary];
+    [self parseWebsiteTypeFromURLPath:dictionary[@"url"]];
 }
 
-- (NSString *)projectPathFromRawPath:(NSString *)rawURL {
+- (void)parseWebsiteTypeFromURLPath:(NSString*)URLPath
+{
+    if ([URLPath rangeOfString:@"github.com"].location != NSNotFound || [URLPath rangeOfString:@"githubusercontent.com"].location != NSNotFound) {
+        _websiteType = ATZPackageWebsiteTypeGithub;
+    } else if ([URLPath rangeOfString:@"bitbucket.com"].location != NSNotFound) {
+        _websiteType = ATZPackageWebsiteTypeBitbucket;
+    } else {
+        _websiteType = ATZPackageWebsiteTypeOtherGit;
+    }
+}
+
+- (NSString *)projectPathFromGithubRawPath:(NSString *)rawURL {
     NSString *username = rawURL.pathComponents[2];
     NSString *repository = rawURL.pathComponents[3];
     return [NSString stringWithFormat:@"https://github.com/%@/%@", username, repository];
@@ -76,8 +68,8 @@
 #pragma mark - Property getters
 
 - (NSString *)website {
-    if ([self.remotePath rangeOfString:@"raw.github.com"].location != NSNotFound)
-        return [self projectPathFromRawPath:self.remotePath];
+    if ([self.remotePath rangeOfString:@"raw.github"].location != NSNotFound)
+        return [self projectPathFromGithubRawPath:self.remotePath];
     
     else return self.remotePath;
 }
@@ -93,11 +85,11 @@
     @throw [NSException exceptionWithName:@"Not Implemented" reason:@"Some packages don't require restarting!" userInfo:nil];
 }
 
-- (void)installWithProgressMessage:(void (^)(NSString *))progress completion:(void (^)(NSError *))completion {
+- (void)installWithProgress:(void (^)(NSString *, CGFloat))progress completion:(void (^)(NSError *))completion {
     [[self installer] installPackage:self progress:progress completion:completion];
 }
 
-- (void)updateWithProgressMessage:(void (^)(NSString *))progress completion:(void (^)(NSError *))completion {
+- (void)updateWithProgress:(void (^)(NSString *, CGFloat))progress completion:(void (^)(NSError *))completion {
     [[self installer] updatePackage:self progress:progress completion:completion];
 }
 
@@ -112,7 +104,5 @@
 - (NSString *)extension {
     @throw [NSException exceptionWithName:@"Not Implemented" reason:@"Each package has a different extension!" userInfo:nil];
 }
-
-- (void)setIsInstalled:(BOOL)isInstalled { /* Hack for IB bindings. */ }
 
 @end

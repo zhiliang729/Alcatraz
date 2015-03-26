@@ -1,6 +1,6 @@
 // Git.h
 // 
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2013 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,12 +37,14 @@ static NSString *const HARD = @"--hard";
 @interface ATZGit : NSObject
 
 + (void)cloneRepository:(NSString *)remotePath toLocalPath:(NSString *)localPath
-             completion:(void(^)(NSError *error))completion;
+             completion:(void(^)(NSString *output, NSError *error))completion;
 
 + (void)updateRepository:(NSString *)localPath revision:(NSString *)revision
               completion:(void(^)(NSString *output, NSError *error))completion;
 
 + (NSString *)parseRevisionFromDictionary:(NSDictionary *)dict;
+
++ (BOOL)areCommandLineToolsAvailable;
 
 @end
 

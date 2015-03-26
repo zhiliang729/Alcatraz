@@ -1,6 +1,6 @@
 // Plugin.m
 //
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2013 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,10 @@ static NSString *const XCPLUGIN = @".xcplugin";
 
 - (NSString *)extension {
     return XCPLUGIN;
+}
+
+- (NSString *)iconName {
+    return PLUGIN_ICON_NAME;
 }
 
 @end

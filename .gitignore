@@ -16,4 +16,16 @@ profile
 DerivedData
 .idea/
 *.hmapods/*
+*.hmap
+*.xccheckout
+xcodebuild.log
+
+# Shipping
+build/
+releases/
+
+#CocoaPods
 Pods
+
+
+

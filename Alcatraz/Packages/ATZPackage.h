@@ -1,6 +1,6 @@
 // Package.h
 //
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2014 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,31 +25,37 @@
 @class ATZInstaller;
 
 
+typedef NS_ENUM(NSUInteger, ATZPackageWebsiteType) {
+    ATZPackageWebsiteTypeGithub,
+    ATZPackageWebsiteTypeBitbucket,
+    ATZPackageWebsiteTypeOtherGit,
+};
+
 @interface ATZPackage : NSObject
 
 @property (strong, nonatomic) NSString *name;
-@property (strong, nonatomic) NSString *xcodeVersion;
-@property (strong, nonatomic) NSString *description;
+@property (strong, nonatomic) NSString *summary;
 @property (strong, nonatomic) NSString *type;
 @property (strong, nonatomic) NSString *remotePath;
 @property (strong, nonatomic) NSString *revision;
 @property (strong, nonatomic) NSString *screenshotPath;
+@property (strong, nonatomic) NSString *iconName;
 @property (nonatomic, readonly) NSString *website;
 @property (nonatomic, readonly) NSString *extension;
 @property (nonatomic, readonly) BOOL isInstalled;
 @property (nonatomic, assign)   BOOL requiresRestart;
+@property (nonatomic, readonly) ATZPackageWebsiteType websiteType;
 
 - (id)initWithDictionary:(NSDictionary *)dict;
 
-- (void)installWithProgressMessage:(void(^)(NSString *proggressMessage))progress
-                        completion:(void(^)(NSError *failure))completion;
+- (void)installWithProgress:(void(^)(NSString *proggressMessage, CGFloat progress))progress
+                 completion:(void(^)(NSError *failure))completion;
 
-- (void)updateWithProgressMessage:(void(^)(NSString *proggressMessage))progress
-                       completion:(void(^)(NSError *failure))completion;
+- (void)updateWithProgress:(void(^)(NSString *proggressMessage, CGFloat progress))progress
+                completion:(void(^)(NSError *failure))completion;
 
 - (void)removeWithCompletion:(void(^)(NSError *failure))completion;
 
-- (BOOL)isCompatibleWithXcode;
 
 #pragma mark - Abstract
 

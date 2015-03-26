@@ -1,6 +1,6 @@
 // Downloader.h
 //
-// Copyright (c) 2013 Marin Usalj | mneorr.com
+// Copyright (c) 2013 Marin Usalj | supermar.in
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,20 @@
 
 #import <Foundation/Foundation.h>
 
-@interface ATZDownloader : NSObject
+typedef void(^ATZJSONDownloadCompletion)(NSDictionary *json, NSError *error);
+typedef void(^ATZDataDownloadCompletion)(NSData *data, NSError *error);
+typedef void(^ATZDownloadProgress)(CGFloat progress);
 
-- (void)downloadPackageListWithCompletion:(void(^)(NSDictionary *packageList, NSError *error))completion;
-- (void)downloadFileFromPath:(NSString *)remotePath completion:(void(^)(NSData *responseData, NSError *error))completion;
+@interface ATZDownloader : NSObject<NSURLSessionDownloadDelegate, NSURLSessionTaskDelegate>
+
++ (NSString*)packageRepoPath;
++ (void)setPackagesRepoPath:(NSString*)path;
++ (void)resetPackageRepoPath;
+
+- (void)downloadPackageListWithCompletion:(ATZJSONDownloadCompletion)completion;
+- (void)downloadFileFromPath:(NSString *)remotePath
+                    progress:(ATZDownloadProgress)progress
+                  completion:(ATZDataDownloadCompletion)completion;
+
 
 @end
